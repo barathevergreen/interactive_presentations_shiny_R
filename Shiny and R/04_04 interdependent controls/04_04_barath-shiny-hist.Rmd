@@ -1,0 +1,60 @@
+---
+title: "04_04_barath_interdependent controls"
+output: slidy_presentation
+runtime: shiny
+---
+
+## Static Histogram
+
+The `hist` function allows us to easily create histograms:
+
+```{r static_histogram, echo=FALSE}
+hist(rnorm(n=100,mean = 0,sd = 5))
+```
+
+
+## Interactive Histogram with Shiny
+
+This shiny app allows us to modify the dataset visualized in our histogram
+
+```{r interactive_histogram, echo=FALSE}
+library(shiny)
+#setting up sliders for number data, mean,sd
+shinyApp(
+  ui = fluidPage(
+    sliderInput("num_data", 
+                label = "Number of data",
+                min = 1000,
+                max = 5000,
+                value = 1000),
+    sliderInput("mean", 
+                label = "Mean",
+                min = 0,
+                max = 8,
+                value = 3),
+    sliderInput("sd", 
+                label = "Standard Deviation",
+                min = 1,
+                max = 10,
+                value = 2),
+    #dependent variable: defining in server end with renderUI(It depends on SD value)
+    uiOutput("xlim_slider"), 
+    plotOutput("histogram")
+  ),
+  server = function(input, output){
+    #dependent variable explained
+    output$xlim_slider <- renderUI({
+      sliderInput("xlim", 
+                label = "xlim",
+                min = input$sd*5, #x limit based on sd value
+                max = 100,
+                value = 10)
+    })
+    #output with renderPlot and relationship with input variables:
+    output$histogram <- renderPlot(
+      hist(rnorm(input$num_data, mean = input$mean, sd = input$sd), xlim = c(-input$xlim,input$xlim))
+    )
+  }
+)
+```
+
